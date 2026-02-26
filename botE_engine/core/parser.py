@@ -1,6 +1,5 @@
 import re
 
-
 class FireQueryParser:
     def __init__(self, query):
         self.raw_query = query.strip()
@@ -29,9 +28,8 @@ class FireQueryParser:
             elif t.isupper() and len(t) == 3:
                 frame["unit"] = t
 
-        if frame["predicate"] in {"hasGDPPerCapita", "hasGDP", "hasGDPPPP"}:
-            if self.count_uppercase_sum(frame["subject"]) >= 2:
-                frame["subject"] = re.sub(r'(\w)([A-Z])', r'\1 \2', frame["subject"]).strip()
+        if self.count_uppercase_sum(frame["subject"]) >= 2:
+            frame["subject"] = re.sub(r'(\w)([A-Z])', r'\1 \2', frame["subject"]).strip()
 
         print(f"Parsed query frame: {frame}")
         return frame

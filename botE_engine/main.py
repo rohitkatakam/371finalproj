@@ -36,7 +36,7 @@ class MainEngine:
         pass
 
 if __name__ == "__main__":
-    query = "(hasGDP UnitedStates ?gdp 2017 USD)"
+    query = "(hasPopulation UnitedStates ?population 1970 USD)"
     main_engine = MainEngine()
     value = main_engine.run_query(query)
     print(value)

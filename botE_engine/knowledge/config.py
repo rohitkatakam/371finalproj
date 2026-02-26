@@ -1,37 +1,14 @@
 #Wikidata endpoint for making the SPARQL queries
 WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
-#SPARQL query template for retrieving GDP data from Wikidata
-DIRECT_GDP_QUERY_TEMPLATE = """
-SELECT ?countryLabel {target_variable} WHERE {{
-  ?country wdt:P31 wd:Q6256;
-           rdfs:label "{country_name}"@en.
-
-  {{
-    ?country p:{gdpCalc} ?statement.
-    ?statement ps:{gdpCalc} ?gdpValue;
-               pq:P585 ?date.
-    FILTER(YEAR(?date) = {year})
-  }}
-  UNION
-  {{
-    ?economy wdt:P31 wd:Q6456916;
-             wdt:P276 ?country.
-    
-    ?economy p:{gdpCalc} ?statement.
-    ?statement ps:{gdpCalc} ?gdpValue;
-               pq:P585 ?date.
-    FILTER(YEAR(?date) = {year})
-  }}
-
-  BIND(?gdpValue AS {target_variable})
-  
-  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
-}}
-LIMIT 1
-"""
-
 #Constants for GDP calculations
 GDP_PER_CAPITA_PROPERTY = "P2132"
 GDP_PROPERTY = "P2131"
 GDP_PPP_PROPERTY = "P4010"
+
+PROPERTIES = {
+    "hasGDPPerCapita": {"id": GDP_PER_CAPITA_PROPERTY, "add_economy_check": True},
+    "hasGDP": {"id": GDP_PROPERTY, "add_economy_check": True},
+    "hasGDPPPP": {"id": GDP_PPP_PROPERTY, "add_economy_check": True},
+    "hasPopulation": {"id": "P1082", "add_economy_check": False},
+}
