@@ -2,9 +2,8 @@
 WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
 #SPARQL query template for retrieving GDP data from Wikidata
-GDP_PER_CAP_QUERY_TEMPLATE = """
+DIRECT_GDP_QUERY_TEMPLATE = """
 SELECT ?countryLabel ?finalGDP WHERE {{
-  # 1. Find the Country
   ?country wdt:P31 wd:Q6256;
            rdfs:label "{country_name}"@en.
 
@@ -32,3 +31,7 @@ SELECT ?countryLabel ?finalGDP WHERE {{
 LIMIT 1
 """
 
+#Constants for GDP calculations
+GDP_PER_CAPITA_PROPERTY = "P2132"
+GDP_PROPERTY = "P2131"
+GDP_PPP_PROPERTY = "P4010"

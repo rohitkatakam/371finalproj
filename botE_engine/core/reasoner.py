@@ -13,9 +13,17 @@ class ReasoningEngine:
         self.query_frame = query_frame
 
     def get_direct_SPARQL_query(self):
+        '''Constructs a SPARQL query based on the query frame for direct retrieval of GDP data from Wikidata.'''
         if "GDP" in self.query_frame["predicate"]:
-            gdp_calc = "P2132" if self.query_frame["predicate"] == "hasGDPPerCapita" else "P2131"
-            return config.GDP_PER_CAP_QUERY_TEMPLATE.format(
+            if "PerCapita" in self.query_frame["predicate"]:
+                gdp_calc = config.GDP_PER_CAPITA_PROPERTY
+            elif "PPP" in self.query_frame["predicate"]:
+                gdp_calc = config.GDP_PPP_PROPERTY
+            else:
+                gdp_calc = config.GDP_PROPERTY
+
+
+            return config.DIRECT_GDP_QUERY_TEMPLATE.format(
                 country_name=self.query_frame["subject"],
                 gdpCalc=gdp_calc,
                 year=self.query_frame["year"])
@@ -36,8 +44,7 @@ class ReasoningEngine:
         response = requests.get(
                 config.WIKIDATA_SPARQL_ENDPOINT,
                 params={"query": sparql_query, "format": "json"},
-                headers=headers
-        )
+                headers=headers)
 
         if response.status_code == 200:
             data = response.json()
@@ -56,5 +63,5 @@ if __name__ == "__main__":
         "unit": "USD"
     }
     reasoner = ReasoningEngine(query_frame)
-    gdp_value = reasoner.execute_query()
-    print(f"GDP for {query_frame['subject']} in {query_frame['year']}: {gdp_value}")
+    gdp_value = reasoner.execute_direct_query()
+    print(f"GDP for {query_frame['subject']} in {query_frame['year']}: {gdp_value['results']['bindings'][0]['finalGDP']['value'] if gdp_value and gdp_value['results']['bindings'] else 'N/A'} {query_frame['unit']}")
