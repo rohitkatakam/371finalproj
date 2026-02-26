@@ -35,7 +35,7 @@ class ReasoningEngine:
             "User-Agent": "botE/1.0 (contact: ronitmehta1@gmail.com)",
             "Accept": "application/sparql-results+json; charset=utf-8" 
         }
-        
+
         response = requests.get(
                 config.WIKIDATA_SPARQL_ENDPOINT,
                 params={"query": sparql_query, "format": "json"},

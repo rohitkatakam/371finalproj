@@ -16,7 +16,7 @@ SELECT ?countryLabel {target_variable} WHERE {{
   UNION
   {{
     ?economy wdt:P31 wd:Q6456916;
-             wdt:P131 ?country.
+             wdt:P276 ?country.
     
     ?economy p:{gdpCalc} ?statement.
     ?statement ps:{gdpCalc} ?gdpValue;
