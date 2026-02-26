@@ -15,28 +15,37 @@ except ModuleNotFoundError:
 
 class MainEngine:
     def run_query(self, query):
+        print("--------Running query through botE engine--------")
 
         # Step 1: Parse the query to extract components
+        print(f"Received query: {query}")
         parser = FireQueryParser(query)
         query_frame = parser.parsed_tree
 
         # Step 2: Attempt direct retrieval of data from Wikidata
-        reasoner = ReasoningEngine(query_frame)
-        result = reasoner.execute_direct_query()
+        reasoner = ReasoningEngine()
+        data = reasoner.execute_direct_query(query_frame)
 
         # If successful, return the value
-        if result and "results" in result and "bindings" in result["results"]:
-            bindings = result["results"]["bindings"]
-            if len(bindings) > 0:
-                var_name = query_frame["target_variable"].replace("?", "")
-                if var_name in bindings[0]:
-                    return bindings[0][var_name]["value"]
+        result = reasoner.get_result_from_json(data, query_frame)
+        if result is not None:
+            print("----------------")
+            return result
             
-        # Fallback to complex reasoning (Decomposition/Aggregation)
+        # Fallback to decomposition reasoning if direct retrieval fails
+        print("Direct retrieval failed, attempting decomposition reasoning...")
+        result = reasoner.complete_decomposition_reasoning(query_frame)
+        if result is not None:
+            print("----------------")
+            return result
+        
+
+        # Move to analogical reasoning
         pass
 
+
 if __name__ == "__main__":
-    query = "(hasPopulation UnitedStates ?population 1970 USD)"
+    query = "(hasGDPPerCapita SouthAfrica ?x 2017 USD)"
     main_engine = MainEngine()
     value = main_engine.run_query(query)
     print(value)
