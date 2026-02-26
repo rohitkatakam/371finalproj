@@ -3,7 +3,7 @@ WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
 #SPARQL query template for retrieving GDP data from Wikidata
 DIRECT_GDP_QUERY_TEMPLATE = """
-SELECT ?countryLabel ?finalGDP WHERE {{
+SELECT ?countryLabel {target_variable} WHERE {{
   ?country wdt:P31 wd:Q6256;
            rdfs:label "{country_name}"@en.
 
@@ -24,7 +24,7 @@ SELECT ?countryLabel ?finalGDP WHERE {{
     FILTER(YEAR(?date) = {year})
   }}
 
-  BIND(?gdpValue AS ?finalGDP)
+  BIND(?gdpValue AS {target_variable})
   
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
 }}
