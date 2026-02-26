@@ -45,7 +45,7 @@ class MainEngine:
 
 
 if __name__ == "__main__":
-    query = "(hasGDPPerCapita UnitedStates ?x 1890 USD)"
+    query = "(hasPopulationDensity Finland ?x 2017 USD)"
     main_engine = MainEngine()
     value = main_engine.run_query(query)
     print(value)
