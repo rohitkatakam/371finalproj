@@ -66,11 +66,27 @@ class ReasoningEngine:
             
             # Extract values from results (this is simplified and may need more robust handling)
             try:
-                num_value = float(self.get_result_from_json(numerator_result, numerator_frame))
-                denom_value = float(self.get_result_from_json(denominator_result, denominator_frame))
+                
+                # Getting numerator value
+                num_value = self.get_result_from_json(numerator_result, numerator_frame)
+                if num_value is None:
+                    print("Error: Numerator value not found in decomposition results.")
+                    return None
+                num_value = float(num_value)
+
+                # Getting denominator value
+                denom_value = self.get_result_from_json(denominator_result, denominator_frame)
+                if denom_value is None:
+                    print("Error: Denominator value not found in decomposition results.")
+                    return None
+                denom_value = float(denom_value)
+
+                #Division by zero check
                 if denom_value == 0:
                     print("Error: Division by zero in decomposition.")
                     return None
+                
+                
                 return num_value / denom_value
             except (KeyError, IndexError, ValueError) as e:
                 print(f"Error processing decomposition results: {e}")
