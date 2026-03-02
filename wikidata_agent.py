@@ -1,7 +1,6 @@
 from companionsKQML import Pythonian
 from kqml import KQMLPerformative
 import logging
-import time
 import threading
 import re
 import requests
