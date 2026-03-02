@@ -1,5 +1,5 @@
-from companionsKQML import Pythonian, listify
-from kqml import KQMLPerformative, KQMLList
+from companionsKQML import Pythonian
+from kqml import KQMLPerformative
 import logging
 import time
 import threading
