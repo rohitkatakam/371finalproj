@@ -1,0 +1,65 @@
+(in-microtheory BOTEMt)
+
+;;; Predicates
+(isa hasEconomicValue Predicate)
+(arity hasEconomicValue 4)
+(isa wikidataLookup Predicate)
+(arity wikidataLookup 4)
+
+;;; Decomposing Economic Calculations 
+(quantityFormula GDP (TimesFn GDPPerCapita Population))
+(quantityFormula GDPPerCapita (QuotientFn GDP Population))
+(quantityFormula Population (QuotientFn GDP GDPPerCapita))
+
+;;; Getting formula from the main calculation
+(<== (quantityDecomposition ?property ?prop1 ?prop2 ?operation)
+     (quantityFormula ?property (?operation ?prop1 ?prop2)))
+
+;;; Strategy 1: Look up directly from Wikidata
+(isa WikidataDirectLookupStrategy Suggestion)
+
+(suggestionGoalForm WikidataDirectLookupStrategy
+  (hasEconomicValue ?country ?year ?property ?result))
+
+(suggestionSubgoals WikidataDirectLookupStrategy
+  (TheList
+    (wikidataLookup ?country ?year ?property ?result)))
+
+(<== (suggestFor
+       (hasEconomicValue ?country ?year ?property ?result)
+       WikidataDirectLookupStrategy)
+     (true))
+
+;;; Strategy 2: Decomposition
+(isa BOTeDecomposition Suggestion)
+
+(suggestionGoalForm BOTeDecomposition
+  (hasEconomicValue ?country ?year ?property ?value))
+
+(suggestionSubgoals BOTeDecomposition
+  (TheList
+    (quantityDecomposition ?property ?prop1 ?prop2 ?operation)
+    (hasEconomicValue ?country ?year ?prop1 ?val1)
+    (hasEconomicValue ?country ?year ?prop2 ?val2)
+    (evaluate ?value (?operation ?val1 ?val2))))
+
+(<== (suggestFor
+       (hasEconomicValue ?country ?year ?property ?value)
+       BOTeDecomposition)
+     (true))
+
+;;; Connects query to python agent
+(isa WikidataAgentStrategy Suggestion)
+
+(suggestionGoalForm WikidataAgentStrategy
+  (wikidataLookup ?country ?year ?property ?result))
+
+(suggestionSubgoals WikidataAgentStrategy
+  (TheList
+    (holdsOnRemoteAgent EconomicsAgent
+      (wikidataLookup ?country ?year ?property ?result))))
+
+(<== (suggestFor
+       (wikidataLookup ?country ?year ?property ?result)
+       WikidataAgentStrategy)
+     (true))
