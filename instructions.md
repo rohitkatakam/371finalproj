@@ -14,6 +14,8 @@
 
 6. Wait until other tabs besides Status show up in browser
 
+7. Press interaction-manager, load krf, then select the .krf file
+
 **Running Queries**
 
 1. In the commands tab, paste **(goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita)))** and press enter. You can replace the country name, year, and property (GDP, GDPPerCapita) to match as needed
