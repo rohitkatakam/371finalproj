@@ -16,11 +16,11 @@
 
 **Running Queries**
 
-1. In the commands tab, paste (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita))) and press enter. You can replace the country name, year, and property (GDP, GDPPerCapita) to match as needed
+1. In the commands tab, paste **(goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita)))** and press enter. You can replace the country name, year, and property (GDP, GDPPerCapita) to match as needed
 
 2. Recvd should be printed with a value in there SolveActivityFn X, where X is a number
 
-3. Paste (doRemoteAgentPlan session-reasoner (doRunToSolution (SolveActivityFn X))) in Commands and run
+3. Paste **(doRemoteAgentPlan session-reasoner (doRunToSolution (SolveActivityFn X)))** in Commands and run
 
 4. Go back to status tab and wait until it goes from executing-plan to idle
 
