@@ -35,6 +35,6 @@
 
 **Example Queries**
 
-1. Direct: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue UnitedStates 2015 GDPPerCapita ?GDPPerCapita)))
+1. Direct: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue UnitedStates 2015 GDP ?GDP)))
 2. Decomposition: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita)))
 3. Analogical: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue Venezuela 2017 GDPPerCapita ?GDPPerCapita)))
