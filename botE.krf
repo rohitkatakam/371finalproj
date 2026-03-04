@@ -5,6 +5,8 @@
 (arity hasEconomicValue 4)
 (isa wikidataLookup Predicate)
 (arity wikidataLookup 4)
+(isa analogicalLookup Predicate)
+(arity analogicalLookup 3)
 
 ;;; Decomposing Economic Calculations 
 (quantityFormula GDP (TimesFn GDPPerCapita Population))
@@ -15,20 +17,23 @@
 (<== (quantityDecomposition ?property ?prop1 ?prop2 ?operation)
      (quantityFormula ?property (?operation ?prop1 ?prop2)))
 
-;;; Strategy 1: Look up directly from Wikidata
-(isa WikidataDirectLookupStrategy Suggestion)
+;;; Strategy 3: Analogical
 
-(suggestionGoalForm WikidataDirectLookupStrategy
-  (hasEconomicValue ?country ?year ?property ?result))
+(isa BOTeSuggestionAnalogical Suggestion)
 
-(suggestionSubgoals WikidataDirectLookupStrategy
+(suggestionGoalForm BOTeSuggestionAnalogical
+  (hasEconomicValue ?country ?year ?property ?value))
+
+(suggestionSubgoals BOTeSuggestionAnalogical
   (TheList
-    (wikidataLookup ?country ?year ?property ?result)))
+    (analogicalLookup ?country ?year ?returnedcountry)
+    (wikidataLookup ?returnedcountry ?year ?property ?value)))
 
 (<== (suggestFor
-       (hasEconomicValue ?country ?year ?property ?result)
-       WikidataDirectLookupStrategy)
+       (hasEconomicValue ?country ?year ?property ?value)
+       BOTeSuggestionAnalogical)
      (true))
+
 
 ;;; Strategy 2: Decomposition
 (isa BOTeDecomposition Suggestion)
@@ -48,6 +53,23 @@
        BOTeDecomposition)
      (true))
 
+
+;;; Strategy 1: Look up directly from Wikidata
+(isa WikidataDirectLookupStrategy Suggestion)
+
+(suggestionGoalForm WikidataDirectLookupStrategy
+  (hasEconomicValue ?country ?year ?property ?result))
+
+(suggestionSubgoals WikidataDirectLookupStrategy
+  (TheList
+    (wikidataLookup ?country ?year ?property ?result)))
+
+(<== (suggestFor
+       (hasEconomicValue ?country ?year ?property ?result)
+       WikidataDirectLookupStrategy)
+     (true))
+
+
 ;;; Connects query to python agent
 (isa WikidataAgentStrategy Suggestion)
 
@@ -63,3 +85,25 @@
        (wikidataLookup ?country ?year ?property ?result)
        WikidataAgentStrategy)
      (true))
+
+
+(isa AnalogicalAgentStrategy Suggestion)
+
+(suggestionGoalForm AnalogicalAgentStrategy
+  (analogicalLookup ?country ?year ?returnedcountry))
+
+(suggestionSubgoals AnalogicalAgentStrategy
+  (TheList
+    (holdsOnRemoteAgent EconomicsAgent
+      (analogicalLookup ?country ?year ?returnedcountry))))
+
+(<== (suggestFor
+       (analogicalLookup ?country ?year ?returnedcountry)
+       AnalogicalAgentStrategy)
+     (true))
+
+
+;;; Ordering
+(suggestionCostFunction WikidataDirectLookupStrategy 1)
+(suggestionCostFunction BOTeDecomposition 10)
+(suggestionCostFunction BOTeSuggestionAnalogical 100)
