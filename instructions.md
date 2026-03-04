@@ -31,3 +31,10 @@
 1. Right click on session reasoner and select graph solve tree. If everything worked, the top node should be green
 
 2. To also view, right click on session reasoner and press browse WM. After a couple of seconds, in BOTEMt -> hasEconomicValue you can see everything you have proven.
+
+
+**Example Queries**
+
+Direct: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue UnitedStates 2015 GDPPerCapita ?GDPPerCapita)))
+Decomposition: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita)))
+Analogical: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue Venezuela 2017 GDPPerCapita ?GDPPerCapita)))
