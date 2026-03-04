@@ -9,9 +9,34 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 SPARQL_values = {
-            "population": {"id": "P1082", "year_dependent": True, "add_economy_check": False},
-            "gdp": {"id": "P2131", "year_dependent": True, "add_economy_check": True},
-            "gdppercapita": {"id": "P2132", "year_dependent": True, "add_economy_check": True}
+    "population": 
+        {
+            "id": "P1082", 
+            "year_dependent": True, 
+            "add_economy_check": False
+         },
+            
+    "gdp": 
+        {
+            "id": "P2131", 
+            "year_dependent": True, 
+            "add_economy_check": True
+        },
+            
+    "gdppercapita": 
+        {
+            "id": "P2132", 
+            "year_dependent": True, 
+            "add_economy_check": True
+         },
+    
+    "unemploymentrate":
+        {
+            "id": "P1198", 
+            "year_dependent": True, 
+            "add_economy_check": True
+         }
+    
 }
 
 def generate_SPARQL_query(country, year, prop):
@@ -65,6 +90,49 @@ def generate_SPARQL_query(country, year, prop):
 
         return base_query + "}"
     
+def analogical_query_generation(country, year):
+    country = country_spacer(country)
+    logger.info(f"Generating analogical SPARQL query for country: {country}, year: {year}")
+    query = f""" SELECT ?similar_country ?similar_countryLabel ?value2
+    WHERE {{
+           ?country wdt:P31 wd:Q6256 ;
+           rdfs:label "{country}"@en ;
+           p:P1081 ?statement_us ;
+           p:P1082 ?statement4.
+
+            ?statement_us ps:P1081 ?value ;
+                           pq:P585 ?date1 .
+            FILTER(YEAR(?date1) = {year})
+  
+             ?statement4 ps:P1082 ?value4 ;
+             pq:P585 ?date4 .
+             FILTER(YEAR(?date4) = {year})
+ 
+            ?similar_country wdt:P31 wd:Q6256 ;
+                   p:P1081 ?statement2;
+                   p:P1082 ?statement3.
+
+            ?statement2 ps:P1081 ?value2 ;
+              pq:P585 ?date2 .
+            FILTER(YEAR(?date2) = {year})
+  
+            ?statement3 ps:P1082 ?value3 ;
+             pq:P585 ?date3 .
+            FILTER(YEAR(?date3) = {year})
+      
+
+            FILTER(?similar_country != ?country)
+
+            FILTER(ABS(?value2 - ?value) <= 0.1)
+            FILTER(?value3 > ?value4 / 3)
+            FILTER(?value3 < ?value4 * 3)
+
+             SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
+            }}
+            ORDER BY (ABS(?value2 - ?value))
+            LIMIT 1"""
+    return query
+    
 def execute_direct_query(SQARQL_query):
     # API Call to Wikidata with Sparql query
     headers = { "User-Agent": "botE/1.0 (contact: ronitmehta1@gmail.com)", "Accept": "application/sparql-results+json; charset=utf-8" }
@@ -99,6 +167,17 @@ def get_result_from_json(result):
                 return bindings[0][var_name]["value"]  
     return None
 
+def get_similar_country_from_json(result):
+    # Extracts the similar country from the analogical SPARQL query result JSON.
+    if result and "results" in result and "bindings" in result["results"]:
+        bindings = result["results"]["bindings"]
+        if len(bindings) > 0:
+            var_name = "similar_countryLabel"
+            if var_name in bindings[0]:
+                logger.info(f"Extracted similar country: {bindings[0][var_name]['value']}")
+                return bindings[0][var_name]["value"]  
+    return None
+
 
 class EconomicsAgent(Pythonian):
     name = "EconomicsAgent"
@@ -107,6 +186,8 @@ class EconomicsAgent(Pythonian):
         self.debug = True
         self.add_ask(self.wikidata_lookup, name="wikidataLookup")
         self.advertise("(wikidataLookup ?country ?year ?property ?result)")
+        self.add_ask(self.analogical_query, name="analogicalLookup")
+        self.advertise("(analogicalLookup ?country ?year ?returnedcountry)")
 
     @staticmethod
     def wikidata_lookup(country, year, prop):
@@ -138,6 +219,35 @@ class EconomicsAgent(Pythonian):
             return None   
          
         return answer
+    
+    @staticmethod
+    def analogical_query(country, year):
+        logger.info(f"analogical_query called with: {country}, {year}")
+
+        # Turn input into strings
+        country = str(country)
+        year = str(year)
+        
+        # Generate the analogical SPARQL query based on the input parameters
+        SPARQL_query = analogical_query_generation(country, year)
+        if SPARQL_query is None:
+            logger.error("Error: Failed to generate analogical SPARQL query.")
+            return None
+        
+        # Execute the analogical SPARQL query and get the results
+        result = execute_direct_query(SPARQL_query)
+        if result is None:
+            logger.error("Error: Failed to execute analogical SPARQL query.")
+            return None
+        
+        logger.info(f"Analogical SPARQL query result: {result}")
+        # Extract the similar country from the analogical SPARQL query result
+        similar_country = get_similar_country_from_json(result)
+        if similar_country is None:
+            logger.info("No similar country found for the query.")
+            return None
+        
+        return similar_country
     
     
     def receive_ask_all(self, msg, content):
