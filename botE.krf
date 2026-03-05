@@ -103,7 +103,50 @@
      (true))
 
 
+;;; Unit Conversion Support
+
+(isa hasEconomicValueInUnit Predicate)
+(arity hasEconomicValueInUnit 5)
+
+(isa convertUnits Predicate)
+(arity convertUnits 4)
+
+;;; Connects convertUnits query to python agent
+(isa ConvertUnitsAgentStrategy Suggestion)
+
+(suggestionGoalForm ConvertUnitsAgentStrategy
+  (convertUnits ?fromUnit ?toUnit ?year ?factor))
+
+(suggestionSubgoals ConvertUnitsAgentStrategy
+  (TheList
+    (holdsOnRemoteAgent EconomicsAgent
+      (convertUnits ?fromUnit ?toUnit ?year ?factor))))
+
+(<== (suggestFor
+       (convertUnits ?fromUnit ?toUnit ?year ?factor)
+       ConvertUnitsAgentStrategy)
+     (true))
+
+;;; Strategy: resolve base USD value via any existing strategy, then convert to target unit
+(isa BOTeUnitConversionStrategy Suggestion)
+
+(suggestionGoalForm BOTeUnitConversionStrategy
+  (hasEconomicValueInUnit ?country ?year ?property ?value ?unit))
+
+(suggestionSubgoals BOTeUnitConversionStrategy
+  (TheList
+    (hasEconomicValue ?country ?year ?property ?baseValue)
+    (convertUnits USD ?unit ?year ?factor)
+    (evaluate ?value (TimesFn ?baseValue ?factor))))
+
+(<== (suggestFor
+       (hasEconomicValueInUnit ?country ?year ?property ?value ?unit)
+       BOTeUnitConversionStrategy)
+     (true))
+
+
 ;;; Ordering
 (suggestionCostFunction WikidataDirectLookupStrategy 1)
+(suggestionCostFunction BOTeUnitConversionStrategy 5)
 (suggestionCostFunction BOTeDecomposition 10)
 (suggestionCostFunction BOTeSuggestionAnalogical 100)
