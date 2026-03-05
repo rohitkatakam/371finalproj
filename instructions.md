@@ -38,3 +38,21 @@
 1. Direct: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue UnitedStates 2015 GDP ?GDP)))
 2. Decomposition: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita)))
 3. Analogical: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue Venezuela 2017 GDPPerCapita ?GDPPerCapita)))
+4. Unit Conversion: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValueInUnit SouthAfrica 2017 GDPPerCapita ?value EUR)))
+
+
+**Unit Conversion Queries**
+
+Unit conversion uses a separate predicate `hasEconomicValueInUnit` that takes a target currency as a fifth argument. The system retrieves the base USD value (via direct lookup, decomposition, or analogical reasoning as needed), then converts using historical exchange rates from frankfurter.app.
+
+Query format:
+(goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValueInUnit Country Year Property ?value CurrencyCode)))
+
+Run it to solution the same way as any other query:
+(doRemoteAgentPlan session-reasoner (doRunToSolution (SolveActivityFn X)))
+
+To view results: right click session-reasoner -> browse WM -> BOTEMt -> hasEconomicValueInUnit
+
+Supported currency codes include: EUR, GBP, TRY, JPY, CNY, BRL, INR, KRW, CAD, AUD (any currency supported by frankfurter.app). Exchange rates are historically accurate for the queried year.
+
+Note: all existing hasEconomicValue queries continue to work unchanged and return values in USD.

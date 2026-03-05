@@ -188,6 +188,8 @@ class EconomicsAgent(Pythonian):
         self.advertise("(wikidataLookup ?country ?year ?property ?result)")
         self.add_ask(self.analogical_query, name="analogicalLookup")
         self.advertise("(analogicalLookup ?country ?year ?returnedcountry)")
+        self.add_ask(self.convert_units, name="convertUnits")
+        self.advertise("(convertUnits ?fromUnit ?toUnit ?year ?factor)")
 
     @staticmethod
     def wikidata_lookup(country, year, prop):
@@ -250,6 +252,33 @@ class EconomicsAgent(Pythonian):
         return similar_country
     
     
+    @staticmethod
+    def convert_units(from_unit, to_unit, year):
+        logger.info(f"convert_units called with: {from_unit}, {to_unit}, {year}")
+
+        from_unit = str(from_unit).upper()
+        to_unit = str(to_unit).upper()
+        year = str(year)
+
+        if from_unit == to_unit:
+            return "1"
+
+        # Use frankfurter.app for historical exchange rates (free, no API key needed)
+        try:
+            url = f"https://api.frankfurter.app/{year}-01-01"
+            response = requests.get(url, params={"from": from_unit, "to": to_unit})
+            if response.status_code == 200:
+                data = response.json()
+                rate = data.get("rates", {}).get(to_unit)
+                if rate is not None:
+                    logger.info(f"Exchange rate {from_unit}->{to_unit} for {year}: {rate}")
+                    return str(rate)
+            logger.error(f"Frankfurter API error {response.status_code}: {response.text[:200]}")
+        except Exception as e:
+            logger.error(f"Error fetching exchange rate: {e}")
+
+        return None
+
     def receive_ask_all(self, msg, content):
         # Ask all doesn't work so use ask one
         logger.info(f"receive_ask_all called with: {content}")
