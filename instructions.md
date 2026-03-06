@@ -38,7 +38,7 @@
 1. Direct: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue UnitedStates 2015 GDP ?GDP)))
 2. Decomposition: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue SouthAfrica 2017 GDPPerCapita ?GDPPerCapita)))
 3. Analogical: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue Venezuela 2017 GDPPerCapita ?GDPPerCapita)))
-4. Mereology: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue EuropeanUnion 2016 Population ?Pop)))
+4. Mereology: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValue EuropeanUnion 2009 Population ?Pop)))
 5. Unit Conversion: (goalOfSolve ?s (ist-Information BOTEMt (hasEconomicValueInUnit SouthAfrica 2017 GDPPerCapita ?value EUR)))
 
 
