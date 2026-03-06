@@ -34,11 +34,11 @@ Our plan is to first identify a set of concrete BotE estimation problems and ext
 - Week 8 (Feb 19-25):  
   - *Goal:* System should be able to answer a question if the data exists directly/can be simply broken down  
   - Write the python wrapper that takes a query from FIRE and turns it into SPARQL (**Rohit & Ronit**)  
-  - Implement normalizing units in python; if a user asks for kg but the data in wikidata is in tons, convert before returning it (**Josh & Noah**)  
-- Week 9 (Feb 26-March 4\)  
+  - Implement normalizing units in python; if a user asks for usd but the data in wikidata is in eur, convert before returning it (**Josh & Noah**)  
+- Week 9 (Feb 26-March 4)  
   - *Goal:* The system can handle missing data by guessing based on similar entities  
-  - Implement the generalization strategy, logic that traverses the graph to find a parent entity (**Josh & Ronit**)  
-  - Implement a simple caching system so we don’t have to query wikidata 100 times for the same query in this logic; also run a full test on the happy path questions (**Rohit & Noah**)  
+  - Implement the generalization strategy, logic that searches wikidata for related entities (**Josh & Ronit**)  
+  - Run a full test on the happy path questions (**Rohit & Noah**)  
 - Week 10 (March 5-9)  
   - *Goal*: Finalize results and deliverables (**Everyone**)  
   - Run the test suite again and record metrics  
