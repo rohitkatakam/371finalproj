@@ -1,4 +1,4 @@
-from companionsKQML import Pythonian
+from companionsKQML import Pythonian, listify
 from kqml import KQMLPerformative
 import logging
 import threading
@@ -39,12 +39,12 @@ SPARQL_values = {
     
 }
 
-def generate_SPARQL_query(country, year, prop):
+def generate_SPARQL_query(country, year, prop, mereology=False):
         # Generates a SPARQL query based on the input country, year, and property. It uses the SPARQL_values dictionary to determine how to construct the query for different properties.
         
-        logger.info(f"Generating SPARQL query for country: {country}, year: {year}, property: {prop}")
+        logger.info(f"Generating SPARQL query for country/entity: {country}, year: {year}, property: {prop}")
         country = country_spacer(country)
-        logger.info(f"Formatted country name for SPARQL query: {country}")
+        logger.info(f"Formatted country/entity name for SPARQL query: {country}")
         
         
         # Gets the property information based on what is stored in the config file for the given predicate
@@ -65,17 +65,17 @@ def generate_SPARQL_query(country, year, prop):
             """
         
         # Builds the query
-        base_query = f""" SELECT ?value WHERE {{ 
-        ?country wdt:P31 wd:Q6256;
-        rdfs:label "{country}"@en.
+        base_query = f"""SELECT {"?country ?countryLabel" if mereology else ""} ?value WHERE {{
+        {
+        f"?country wdt:P31 wd:Q6256; rdfs:label '{country}'@en."
+        if not mereology else
+        f"?org rdfs:label '{country}'@en . ?country wdt:P463 ?org ; wdt:P31 wd:Q6256 ."
+        }
         {{
-            ?country p:{properties_info['id']} ?statement.
-            ?statement ps:{properties_info['id']} ?value;
-            
-            {year_filter}
-
-
-        }} """ 
+        ?country p:{properties_info['id']} ?statement.
+        ?statement ps:{properties_info['id']} ?value;
+        {year_filter}
+        }}"""
         
         if properties_info["add_economy_check"]:
             base_query += f"""
@@ -148,7 +148,8 @@ def execute_direct_query(SQARQL_query):
 
 def country_spacer(country):
     # If the country name has 2 or more uppercase letters, assume it's in camel case and add spaces before uppercase letters.
-    if count_uppercase_sum(country) >= 2:
+    n = count_uppercase_sum(country)
+    if n >= 2 and n != len(country):
         return re.sub(r'(\w)([A-Z])', r'\1 \2', country.strip())
     return country
 
@@ -175,7 +176,9 @@ def get_similar_country_from_json(result):
             var_name = "similar_countryLabel"
             if var_name in bindings[0]:
                 logger.info(f"Extracted similar country: {bindings[0][var_name]['value']}")
-                return bindings[0][var_name]["value"]  
+                name = bindings[0][var_name]["value"]
+                name = name.replace(" ", "")
+                return name 
     return None
 
 
@@ -190,6 +193,41 @@ class EconomicsAgent(Pythonian):
         self.advertise("(analogicalLookup ?country ?year ?returnedcountry)")
         self.add_ask(self.convert_units, name="convertUnits")
         self.advertise("(convertUnits ?fromUnit ?toUnit ?year ?factor)")
+        self.add_ask(self.mereology_lookup, name="mereologyLookup")
+        self.advertise("(mereologyLookup ?organization ?year ?property ?values)")
+        
+    @staticmethod
+    def mereology_lookup(organization, year, prop):
+        logger.info(f"mereology_lookup called with: {organization}")
+
+        organization = str(organization)
+        organization = country_spacer(organization)
+        
+        logger.info(f"Formatted organization name for SPARQL query: {organization}")
+
+        prop = str(prop)
+        SPARQL_query = generate_SPARQL_query(organization, year, prop.lower(), mereology=True)
+        if SPARQL_query is None:
+            logger.error("Error: Failed to generate SPARQL query for mereology lookup.")
+            return None
+        
+        result = execute_direct_query(SPARQL_query)
+        if result is None:
+            logger.error("Error: Failed to execute SPARQL query for mereology lookup.")
+            return None
+        
+        logger.info(f"SPARQL query result for mereology lookup: {result}")
+        values = []
+        countries = set()
+        if result and "results" in result and "bindings" in result["results"]:
+            bindings = result["results"]["bindings"]
+            for binding in bindings:
+                if "value" in binding:
+                    if binding['country']['value'] not in countries:
+                        countries.add(binding['country']['value'])
+                        values.append(binding["value"]["value"])
+        
+        return values
 
     @staticmethod
     def wikidata_lookup(country, year, prop):
@@ -201,7 +239,7 @@ class EconomicsAgent(Pythonian):
         prop = str(prop)
         
         # Generate the SPARQL query based on the input parameters
-        SPARQL_query = generate_SPARQL_query(country, year, prop.lower())
+        SPARQL_query = generate_SPARQL_query(country, year, prop.lower(), mereology=False)
         if SPARQL_query is None:
             logger.error("Error: Failed to generate SPARQL query.")
             return None
@@ -303,8 +341,11 @@ class EconomicsAgent(Pythonian):
                 if str(each).startswith('?'):
                     var_name = str(each)
             var_name = var_name or '?result'
+            if isinstance(results, list):
+                results = listify(results)
             content_str = f'((({var_name} . {results})))'
             
+        print(f"Formatted content string for KQML response: {content_str}")
         reply_msg = (f'(tell :sender {self.name} :content {content_str})')
         self.reply(msg, KQMLPerformative.from_string(reply_msg))
 
