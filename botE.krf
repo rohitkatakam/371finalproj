@@ -7,6 +7,9 @@
 (arity wikidataLookup 4)
 (isa analogicalLookup Predicate)
 (arity analogicalLookup 3)
+(isa mereologyLookup Predicate)
+(arity mereologyLookup 4)
+
 
 ;;; Decomposing Economic Calculations 
 (quantityFormula GDP (TimesFn GDPPerCapita Population))
@@ -16,6 +19,28 @@
 ;;; Getting formula from the main calculation
 (<== (quantityDecomposition ?property ?prop1 ?prop2 ?operation)
      (quantityFormula ?property (?operation ?prop1 ?prop2)))
+
+;;; Strategy 4: Mereology
+
+(isa BOTeSuggestionMereology Suggestion)
+(isa InternationalGroup Collection)
+
+(suggestionGoalForm BOTeSuggestionMereology
+  (hasEconomicValue ?organization ?year ?property ?value))
+
+(suggestionSubgoals BOTeSuggestionMereology
+  (TheList
+    (mereologyLookup ?organization ?year ?property ?values)
+    (evaluate ?value (PlusAll ?values IdentityFn))))
+
+(<== (suggestFor
+       (hasEconomicValue ?organization ?year ?property ?value)
+       BOTeSuggestionMereology)
+     (isa ?organization InternationalGroup))
+
+(isa BRICS InternationalGroup)
+(isa NATO InternationalGroup)
+(isa EuropeanUnion InternationalGroup)
 
 ;;; Strategy 3: Analogical
 
@@ -102,6 +127,21 @@
        AnalogicalAgentStrategy)
      (true))
 
+(isa MereologicalAgentStrategy Suggestion)
+
+(suggestionGoalForm MereologicalAgentStrategy
+  (mereologyLookup ?organization ?year ?property ?value))
+
+(suggestionSubgoals MereologicalAgentStrategy
+  (TheList
+    (holdsOnRemoteAgent EconomicsAgent
+      (mereologyLookup ?organization ?year ?property ?value))))
+
+(<== (suggestFor
+       (mereologyLookup ?organization ?year ?property ?value)
+       MereologicalAgentStrategy)
+     (true))
+
 
 ;;; Unit Conversion Support
 
@@ -146,7 +186,8 @@
 
 
 ;;; Ordering
-(suggestionCostFunction WikidataDirectLookupStrategy 1)
+(suggestionCostFunction BOTeSuggestionMereology 1)
+(suggestionCostFunction WikidataDirectLookupStrategy 3)
 (suggestionCostFunction BOTeUnitConversionStrategy 5)
 (suggestionCostFunction BOTeDecomposition 10)
 (suggestionCostFunction BOTeSuggestionAnalogical 100)
