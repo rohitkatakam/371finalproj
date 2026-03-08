@@ -6,15 +6,17 @@
 
 2. Place agent file into companions -> pythonian folder
 
-3. Run the companions starting script from the terminal using ./run-companions.sh. This will open the engine in the browser at the http://localhost:9100/smgr.html#
+3. In your run-companions file, change line 100 to ** -v $PYTHONIAN_CODE:/code \ **
 
-4. Click start session and run Interaction Manager
+4. Run the companions starting script from the terminal using ./run-companions.sh. This will open the engine in the browser at the http://localhost:9100/smgr.html#
 
-5. From a NEW terminal window, run docker exec -it companions python3 /code/wikidata_agent.py (if you're running into error saying wikidata agent not found: cp "wikidata_agent.py" ~/companions/pythonian/)
+5. Click start session and run Interaction Manager
 
-6. Wait until other tabs besides Status show up in browser
+6. From a NEW terminal window, run docker exec -it companions python3 /code/wikidata_agent.py (if you're running into error saying wikidata agent not found: cp "wikidata_agent.py" ~/companions/pythonian/)
 
-7. Press interaction-manager, load krf, then select the .krf file
+7. Wait until other tabs besides Status show up in browser
+
+8. Press interaction-manager, load krf, then select the .krf file
 
 **Running Queries**
 
