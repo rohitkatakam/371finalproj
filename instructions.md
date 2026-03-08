@@ -6,7 +6,7 @@
 
 2. Place agent file into companions -> pythonian folder
 
-3. In your run-companions file, change line 100 to ** -v $PYTHONIAN_CODE:/code \ **
+3. In your run-companions file, change line 100 to -v $PYTHONIAN_CODE:/code \ 
 
 4. Run the companions starting script from the terminal using ./run-companions.sh. This will open the engine in the browser at the http://localhost:9100/smgr.html#
 
